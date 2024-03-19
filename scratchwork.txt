@@ -1,0 +1,9 @@
+3 classes:
+1. GAMESPACE/BOARD
+2. ACTOR
+3. UI 
+
+ACTOR is the most diverse class, includes subclasses PLAYER and ENEMY
+
+ENEMY itself divides into further subclasses, QIX, SPARCS, etc.
+
