@@ -11,7 +11,7 @@ new boundaries get drawn. Enemies will attempt to collide into you, reducing HP.
 whether you are resting on the edge or pushing out to capture!
 
 ~~ The Team ~~
-Carissa Larocque - Team Leader, Lead Programmer
+Carissa Larocque 
 Muran Ganesan  
 Sabesen Pathmanathan
 Ryan Aleixo
