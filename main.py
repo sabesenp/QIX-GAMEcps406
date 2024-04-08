@@ -24,10 +24,13 @@ PASTEL_CORAL = (248, 132, 121)
 def drawScene():
     #placeholders, will be switched for updateable entities
     screen.fill((0,0,0))
-    boardW = 350
+    boardW = 400
 
+    # health bar
     GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
-    pg.draw.rect(screen, PASTEL_CORAL, (screenMid[0] - boardW // 2 - 100, screenMid[1] - boardW // 2, boardW, boardW) ) 
+    pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screenSize[0] // 4, 10))
+
+    pg.draw.rect(screen, PASTEL_CORAL, (screenMid[0] - boardW // 2 - 105, screenMid[1] - boardW // 2 + 25, boardW, boardW) ) 
     pg.draw.rect(screen, (255, 0, 0), player.this)
 
 def update(dx, dy):
