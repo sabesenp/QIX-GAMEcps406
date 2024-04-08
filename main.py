@@ -11,6 +11,8 @@ pg.init()
 # Set the screen to windowed mode
 HD = (1280, 720)
 SD = (640, 480)
+
+
 screen = pg.display.set_mode(SD, RESIZABLE)
 pg.display.set_caption("QIX")
 screenSize = pg.display.get_window_size()
@@ -42,6 +44,8 @@ def update(dx, dy):
     global screenSize, screenMid
     screenSize = pg.display.get_window_size()
     screenMid = (screenSize[0] // 2, screenSize[1] // 2)
+
+    
     player.this.move_ip(dx, dy)
 
 #some game states
