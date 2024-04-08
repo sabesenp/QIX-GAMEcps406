@@ -1,11 +1,8 @@
 from pygame import *
 class MainActor:
-        def ___init___(self, this, health, edge):
-                self.this = this
-                self.health = health
-                self.edge = edge
+    def __init__(self, this = Rect(315,340,10,10), health = 100, edge = True):
+        self.this = this
+        self.health = health
+        self.edge = edge
 
-        def move(dx, dy, push):
-                this = this.move(dx, dy)
-        
-        
+    

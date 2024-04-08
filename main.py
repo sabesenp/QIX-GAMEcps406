@@ -3,18 +3,35 @@
 #this block of code is setting up the screen, libraries, 
 import random       #importing the random library
 from MainActor import *
-from pygame import *
+import pygame as pg
 
 # Initialize Pygame
-init()
+pg.init()
 
 # Set the screen to windowed mode
 HD = (1280, 720)
 SD = (640, 480)
-screen = display.set_mode(SD, RESIZABLE)
-display.set_caption("QIX")
+screen = pg.display.set_mode(SD, 0)
+pg.display.set_caption("QIX")
+screenSize = pg.display.get_window_size()
+screenMid = (screenSize[0] // 2, screenSize[1] // 2)
+GAME_FONT = pg.freetype.Font("PressStart2P.ttf", 25)
 
 PASTEL_CORAL = (248, 132, 121)
+
+
+
+def drawScene():
+    #placeholders, will be switched for updateable entities
+    screen.fill((0,0,0))
+    boardW = 350
+
+    GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
+    pg.draw.rect(screen, PASTEL_CORAL, (screenMid[0] - boardW // 2 - 100, screenMid[1] - boardW // 2, boardW, boardW) ) 
+    pg.draw.rect(screen, (255, 0, 0), player.this)
+
+def update(dx, dy):
+    player.this.move_ip(dx, dy)
 
 #some game states
 KEY_RIGHT = False
@@ -22,31 +39,19 @@ KEY_LEFT = False
 KEY_UP = False
 KEY_DOWN = False
 PUSH = False
-dx = 10
-dy = 10
-player = MainActor(Rect(0,0,10,10),100, True)
-
-def drawScene():
-    #placeholders, will be switched for updateable entities
-    screen.fill((0,0,0))
-    screenSize = display.get_window_size()
-    screenMid = (screenSize[0] // 2, screenSize[1] // 2)
-    boardW = 200
-
-    
-    draw.rect(screen, PASTEL_CORAL, (screenMid[0] - boardW // 2, screenMid[1] - boardW // 2, boardW, boardW) ) 
-    draw.rect(player.this)
-
+dx = 0
+dy = 0
+player = MainActor()
 
 # Start the main loop
 while True:
 
     # Check for events
-    for event in event.get():
+    for event in pg.event.get():
         # Check for the quit event
         if event.type == QUIT:
             # Quit the game
-            quit()
+            pg.quit()
             exit()
         
         #key listener, will flip the according key bits
@@ -69,30 +74,28 @@ while True:
             if event.key == K_UP:
                 KEY_UP = False     #if up key is up, the corresponding state is false
             if event.key == K_DOWN:
-                PUSH = False     #if down key is up, the corresponding state is false
+                KEY_DOWN = False     #if down key is up, the corresponding state is false
+            if event.key == K_SPACE:
+                PUSH = False     #if down key is down, the corresponding state is true
 
     #key state handler.
     if KEY_UP:
-        dy = -abs(dy)
+        dy = -10
     elif KEY_DOWN:
-        dy = abs(dy)
+        dy = 10
     else:
         dy = 0
 
     if KEY_LEFT:
-        dx = -abs(dx)
-    elif KEY_DOWN:
-        dx = abs(dx)
+        dx = -10
+    elif KEY_RIGHT:
+        dx = 10
     else:
         dx = 0
 
 
-    #add an update function here???
-
-
-
-
-    #call drawScene() after all logic calculations
-    display.flip()      #ok so do you know what a flipbook is? Yeah, this "flips" to the next frame
-    time.Clock().tick(60)                     #waits long enough to have 60 fps
+    update(dx, dy)
+    drawScene()
+    pg.display.flip()      #ok so do you know what a flipbook is? Yeah, this "flips" to the next frame
+    pg.time.Clock().tick(60)                     #waits long enough to have 60 fps
 
