@@ -29,10 +29,13 @@ def drawScene():
     # health bar
     GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
     pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screenSize[0] // 4, 10))
-
+    
+    pg.draw.rect(screen, (255, 255, 255), (screenMid[0] - boardW // 2 - 115, screenMid[1] - boardW // 2 + 15, boardW + 20, boardW + 20), 1) 
     pg.draw.rect(screen, PASTEL_CORAL, (screenMid[0] - boardW // 2 - 105, screenMid[1] - boardW // 2 + 25, boardW, boardW) ) 
+    
     pg.draw.rect(screen, (255, 0, 0), player.this)
 
+# add a check for the player moving off the board
 def update(dx, dy):
     player.this.move_ip(dx, dy)
 

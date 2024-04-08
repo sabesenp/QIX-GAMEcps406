@@ -4,6 +4,3 @@ class MainActor:
                 self.this = this
                 self.health = health
                 self.edge = edge
-
-        def move(dx, dy):
-                this = this.move(dx, dy)
