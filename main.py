@@ -15,7 +15,7 @@ screen = pg.display.set_mode(SD, RESIZABLE)
 pg.display.set_caption("QIX")
 screenSize = pg.display.get_window_size()
 screenMid = (screenSize[0] // 2, screenSize[1] // 2)
-GAME_FONT = pg.freetype.Font("PressStart2P.ttf", 25)
+GAME_FONT = pg.freetype.Font("PressStart2P.ttf", screenSize[0]//25)
 
 PASTEL_CORAL = (248, 132, 121)
 
@@ -29,7 +29,9 @@ def drawScene():
     # health bar
     GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
     pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screenSize[0] // 4, 10))
-    
+
+
+    #update these offsets
     pg.draw.rect(screen, (255, 255, 255), (screenMid[0] - boardW // 2 - 4, screenMid[1] - boardW // 2 - 4, boardW + 8, boardW + 8), 10) 
     pg.draw.rect(screen, PASTEL_CORAL, (screenMid[0] - boardW // 2, screenMid[1] - boardW // 2, boardW, boardW) ) 
     
