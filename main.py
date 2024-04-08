@@ -13,7 +13,7 @@ HD = (1280, 720)
 SD = (640, 480)
 
 
-screen = pg.display.set_mode(SD, RESIZABLE)
+screen = pg.display.set_mode(SD, 0)
 pg.display.set_caption("QIX")
 screenSize = pg.display.get_window_size()
 screenMid = (screenSize[0] // 2, screenSize[1] // 2)
@@ -34,8 +34,12 @@ def drawScene():
 
 
     #update these offsets
-    pg.draw.rect(screen, (255, 255, 255), (screenMid[0] - boardW // 2 - 4, screenMid[1] - boardW // 2 - 4, boardW + 8, boardW + 8), 10) 
-    pg.draw.rect(screen, PASTEL_CORAL, (screenMid[0] - boardW // 2, screenMid[1] - boardW // 2, boardW, boardW) ) 
+
+    #border rect here
+    pg.draw.rect(screen, (255, 255, 255), (screenMid[0] - boardW // 2 - 4 - 75, screenMid[1] - boardW // 2 - 4, boardW + 8, boardW + 8), 10) 
+    
+    #field rect here
+    pg.draw.rect(screen, PASTEL_CORAL, (screenMid[0] - boardW // 2 - 75, screenMid[1] - boardW // 2, boardW, boardW) ) 
     
     pg.draw.rect(screen, (255, 0, 0), player.this)
 
@@ -45,7 +49,7 @@ def update(dx, dy):
     screenSize = pg.display.get_window_size()
     screenMid = (screenSize[0] // 2, screenSize[1] // 2)
 
-    
+
     player.this.move_ip(dx, dy)
 
 #some game states
