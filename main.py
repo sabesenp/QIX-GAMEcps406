@@ -52,7 +52,7 @@ def inEdge():
 def update(dx, dy):
     player.this.move_ip(dx, dy)
     if player.edge and not inEdge():
-        player.this.move_ip(-dx, -dy)
+       player.this.move_ip(-dx, -dy)
     if not inBounds():
         player.this.move_ip(-dx, -dy)
 
