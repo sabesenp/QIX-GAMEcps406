@@ -45,27 +45,14 @@ def inEdge():
     if not inBounds():
         return False
     
-    #if(player.this.bottom == field.edge.bottom + 10):
-    #    player.this.top >= field.center.bottom
-    #elif(player.this.top + 10 == field.edge.top):
-    #    player.this.bottom <= field.center.bottom
-    #elif(player.this.left + 10 == field.edge.left):
-    #    True
-    #elif(player.this.right == field.edge.right + 10):
-    #    True
-    #return False 
-   # elif(): 
-
-   # return player.this.bottom <= field.center.bottom + 10 or player.this.top + 10 >= field.center.top or player.this.left + 10 >= field.center.left or player.this.right <= field.center.right + 10
-
-    # add checks for which edge player is on
-    # perform check based on that
+    if player.this.centerx <= 40 or player.this.centerx >= 450 or player.this.centery <= 35 or player.this.centery >= 445:
+        return True
 
 
 def update(dx, dy):
     player.this.move_ip(dx, dy)
-    #if player.edge and not inEdge():
-    #    player.this.move_ip(-dx, -dy)
+    if player.edge and not inEdge():
+        player.this.move_ip(-dx, -dy)
     if not inBounds():
         player.this.move_ip(-dx, -dy)
 
