@@ -123,7 +123,6 @@ while True:
         dy = 10
     else:
         dy = 0
-
     if KEY_LEFT:
         dx = -10
     elif KEY_RIGHT:
