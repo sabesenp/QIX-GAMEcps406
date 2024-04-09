@@ -49,6 +49,9 @@ def inEdge():
         return True
 
 
+def claimEval():
+    
+
 def update(dx, dy):
     if PUSH:
         player.edge = False
