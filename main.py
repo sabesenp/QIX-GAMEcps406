@@ -25,6 +25,7 @@ PASTEL_CORAL = (248, 132, 121)
 
 def drawScene():
     #placeholders, will be switched for updateable entities
+    pg.draw.rect(screen, (255, 0, 0), player.this)
     screen.fill((0,0,0))
 
     # health bar
@@ -49,8 +50,8 @@ def inEdge():
         return True
 
 
-def claimEval():
-    
+#def claimEval():
+
 
 def update(dx, dy):
     if PUSH:
