@@ -44,6 +44,20 @@ def inBounds():
 def inEdge():
     if not inBounds():
         return False
+    
+    #if(player.this.bottom == field.edge.bottom + 10):
+    #    player.this.top >= field.center.bottom
+    #elif(player.this.top + 10 == field.edge.top):
+    #    player.this.bottom <= field.center.bottom
+    #elif(player.this.left + 10 == field.edge.left):
+    #    True
+    #elif(player.this.right == field.edge.right + 10):
+    #    True
+    #return False 
+   # elif(): 
+
+   # return player.this.bottom <= field.center.bottom + 10 or player.this.top + 10 >= field.center.top or player.this.left + 10 >= field.center.left or player.this.right <= field.center.right + 10
+
     # add checks for which edge player is on
     # perform check based on that
 
