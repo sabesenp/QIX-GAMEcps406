@@ -41,12 +41,17 @@ def inBounds():
     # and player.this.left >= field.edge.left and player.this.right <= field.edge.right
     return player.this.bottom <= field.edge.bottom + 10 and player.this.top + 10 >= field.edge.top and player.this.left + 10 >= field.edge.left and player.this.right <= field.edge.right + 10
 
+def inEdge():
+    if not inBounds():
+        return False
+    # add checks for which edge player is on
+    # perform check based on that
 
 
-# add a check for the player moving off the board
 def update(dx, dy):
-    #here, add check for player moving off field
     player.this.move_ip(dx, dy)
+    #if player.edge and not inEdge():
+    #    player.this.move_ip(-dx, -dy)
     if not inBounds():
         player.this.move_ip(-dx, -dy)
 
