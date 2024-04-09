@@ -1,5 +1,5 @@
 from pygame import *
-class MainActor:
+class Enemy:
         def ___init___(self, this, health, edge):
                 self.this = this
                 self.health = health
