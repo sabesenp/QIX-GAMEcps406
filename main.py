@@ -46,12 +46,17 @@ def inEdge():
         return False
     # add checks for which edge player is on
     # perform check based on that
+    if player.this.centerx <= 40 or player.this.centerx >= 450 or \
+        player.this.centery <= 35 or player.this.centery >= 445:
+        return True
+
+    # 445 bottom 35 top y    # 40 left 450 right x
 
 
 def update(dx, dy):
     player.this.move_ip(dx, dy)
-    #if player.edge and not inEdge():
-    #    player.this.move_ip(-dx, -dy)
+    if player.edge and not inEdge():
+       player.this.move_ip(-dx, -dy)
     if not inBounds():
         player.this.move_ip(-dx, -dy)
 
