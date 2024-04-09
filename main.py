@@ -50,9 +50,13 @@ def inEdge():
 
 
 def update(dx, dy):
+    if PUSH:
+        player.edge = False
     player.this.move_ip(dx, dy)
     if player.edge and not inEdge():
        player.this.move_ip(-dx, -dy)
+    elif not player.edge and inEdge():
+        player.edge = True
     if not inBounds():
         player.this.move_ip(-dx, -dy)
 
@@ -62,8 +66,6 @@ KEY_LEFT = False
 KEY_UP = False
 KEY_DOWN = False
 PUSH = False
-dx = 0
-dy = 0
 player = MainActor()
 board_w = 5 * screen_size[1] // 6
 field = Field(Rect(screen_mid[0] - board_w // 2 - 75, screen_mid[1] - board_w // 2, board_w, board_w) , Rect(screen_mid[0] - board_w // 2 - 4 - 75, screen_mid[1] - board_w // 2 - 4, board_w + 8, board_w + 8))
@@ -104,18 +106,17 @@ while True:
                 PUSH = False     #if down key is down, the corresponding state is true
 
     #key state handler.
+    dx = 0
+    dy = 0
     if KEY_UP:
         dy = -10
     elif KEY_DOWN:
         dy = 10
-    else:
-        dy = 0
-    if KEY_LEFT:
+    elif KEY_LEFT:
         dx = -10
     elif KEY_RIGHT:
         dx = 10
-    else:
-        dx = 0
+
 
 
     update(dx, dy)
