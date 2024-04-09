@@ -3,6 +3,7 @@
 #this block of code is setting up the screen, libraries, 
 import random       #importing the random library
 from MainActor import *
+from Field import *
 import pygame as pg
 
 # Initialize Pygame
@@ -15,10 +16,9 @@ SD = (640, 480)
 
 screen = pg.display.set_mode(SD, 0)
 pg.display.set_caption("QIX")
-screenSize = pg.display.get_window_size()
-screenMid = (screenSize[0] // 2, screenSize[1] // 2)
-GAME_FONT = pg.freetype.Font("PressStart2P.ttf", screenSize[0]//25)
-
+screen_size = pg.display.get_window_size()
+screen_mid = (screen_size[0] // 2, screen_size[1] // 2)
+GAME_FONT = pg.freetype.Font("PressStart2P.ttf", screen_size[0]//25)
 PASTEL_CORAL = (248, 132, 121)
 
 
@@ -26,31 +26,29 @@ PASTEL_CORAL = (248, 132, 121)
 def drawScene():
     #placeholders, will be switched for updateable entities
     screen.fill((0,0,0))
-    boardW = 5 * screenSize[1] // 6
 
     # health bar
     GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
-    pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screenSize[0] // 4, 10))
+    pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screen_size[0] // 4 + 5, 10))
 
 
-    #update these offsets
-
-    #border rect here
-    pg.draw.rect(screen, (255, 255, 255), (screenMid[0] - boardW // 2 - 4 - 75, screenMid[1] - boardW // 2 - 4, boardW + 8, boardW + 8), 10) 
-    
-    #field rect here
-    pg.draw.rect(screen, PASTEL_CORAL, (screenMid[0] - boardW // 2 - 75, screenMid[1] - boardW // 2, boardW, boardW) ) 
+    pg.draw.rect(screen, (255, 255, 255), field.edge, 10) 
+    pg.draw.rect(screen, PASTEL_CORAL, field.center) 
     
     pg.draw.rect(screen, (255, 0, 0), player.this)
 
+def inBounds():
+    # and player.this.left >= field.edge.left and player.this.right <= field.edge.right
+    return player.this.bottom <= field.edge.bottom + 10 and player.this.top + 10 >= field.edge.top and player.this.left + 10 >= field.edge.left and player.this.right <= field.edge.right + 10
+
+
+
 # add a check for the player moving off the board
 def update(dx, dy):
-    global screenSize, screenMid
-    screenSize = pg.display.get_window_size()
-    screenMid = (screenSize[0] // 2, screenSize[1] // 2)
-
-
+    #here, add check for player moving off field
     player.this.move_ip(dx, dy)
+    if not inBounds():
+        player.this.move_ip(-dx, -dy)
 
 #some game states
 KEY_RIGHT = False
@@ -61,6 +59,8 @@ PUSH = False
 dx = 0
 dy = 0
 player = MainActor()
+board_w = 5 * screen_size[1] // 6
+field = Field(Rect(screen_mid[0] - board_w // 2 - 75, screen_mid[1] - board_w // 2, board_w, board_w) , Rect(screen_mid[0] - board_w // 2 - 4 - 75, screen_mid[1] - board_w // 2 - 4, board_w + 8, board_w + 8))
 
 # Start the main loop
 while True:
@@ -77,22 +77,22 @@ while True:
         if event.type == KEYDOWN:
             if event.key == K_LEFT:
                 KEY_LEFT = True     #if left key is down, the corresponding state is true
-            if event.key == K_RIGHT:
+            elif event.key == K_RIGHT:
                 KEY_RIGHT = True     #if right key is down, the corresponding state is true
-            if event.key == K_UP:
+            elif event.key == K_UP:
                 KEY_UP = True     #if up key is down, the corresponding state is true
-            if event.key == K_DOWN:
+            elif event.key == K_DOWN:
                 KEY_DOWN = True     #if down key is down, the corresponding state is true
             if event.key == K_SPACE:
                 PUSH = True     #if down key is down, the corresponding state is true
         if event.type == KEYUP:
             if event.key == K_LEFT:
                 KEY_LEFT = False     #if left key is up, the corresponding state is false
-            if event.key == K_RIGHT:
+            elif event.key == K_RIGHT:
                 KEY_RIGHT = False     #if right key is up, the corresponding state is false
-            if event.key == K_UP:
+            elif event.key == K_UP:
                 KEY_UP = False     #if up key is up, the corresponding state is false
-            if event.key == K_DOWN:
+            elif event.key == K_DOWN:
                 KEY_DOWN = False     #if down key is up, the corresponding state is false
             if event.key == K_SPACE:
                 PUSH = False     #if down key is down, the corresponding state is true
