@@ -39,7 +39,6 @@ def drawScene():
     pg.draw.rect(screen, (255, 0, 0), player.this)
 
 def inBounds():
-    # and player.this.left >= field.edge.left and player.this.right <= field.edge.right
     return player.this.bottom <= field.edge.bottom + 10 and player.this.top + 10 >= field.edge.top and player.this.left + 10 >= field.edge.left and player.this.right <= field.edge.right + 10
 
 def inEdge():
@@ -54,8 +53,10 @@ def update(dx, dy):
     if PUSH and player.edge:
         player.edge = False
     
-    if PUSH:
-        player.this.move_ip(0.5*dx, 0.5*dy)    
+    if PUSH and inEdge():
+        player.this.move_ip(dx, dy) 
+    elif PUSH:
+        player.this.move_ip(0.5*dx, 0.5*dy) 
     else:
         player.this.move_ip(dx, dy)
 
@@ -64,7 +65,7 @@ def update(dx, dy):
         player.this.move_ip(-0.5*dx, -0.5*dy)
        else:
         player.this.move_ip(-dx, -dy)
-    elif not player.edge and (inEdge()):
+    elif not player.edge and inEdge():
         player.edge = True
     if not inBounds():
         player.this.move_ip(-dx, -dy)
