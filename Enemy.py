@@ -1,6 +1,7 @@
 from pygame import *
 class Enemy:
-        def ___init___(self, this, health, edge):
+        def ___init___(self, this, dmg, edge, goal):
                 self.this = this
-                self.health = health
+                self.dmg = dmg
                 self.edge = edge
+                self.goal = (0, 0)
