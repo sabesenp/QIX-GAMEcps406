@@ -4,4 +4,4 @@ class Enemy:
                 self.this = this
                 self.dmg = dmg
                 self.edge = edge
-                self.goal = (0, 0)
+                self.goal = goal

@@ -4,6 +4,7 @@
 import random       #importing the random library
 from MainActor import *
 from Field import *
+from Sparc import *
 import pygame as pg
 
 # Initialize Pygame
