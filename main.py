@@ -50,16 +50,21 @@ def inEdge():
         return True
 
 
-#def claimEval():
-
-
 def update(dx, dy):
-    if PUSH:
+    if PUSH and player.edge:
         player.edge = False
-    player.this.move_ip(dx, dy)
+    
+    if PUSH:
+        player.this.move_ip(0.5*dx, 0.5*dy)    
+    else:
+        player.this.move_ip(dx, dy)
+
     if player.edge and not inEdge():
-       player.this.move_ip(-dx, -dy)
-    elif not player.edge and inEdge():
+       if PUSH:
+        player.this.move_ip(-0.5*dx, -0.5*dy)
+       else:
+        player.this.move_ip(-dx, -dy)
+    elif not player.edge and (inEdge()):
         player.edge = True
     if not inBounds():
         player.this.move_ip(-dx, -dy)
