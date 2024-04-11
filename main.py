@@ -1,10 +1,12 @@
 #all game related logic happens here. calls are made to externals
 #this is a change
 #this block of code is setting up the screen, libraries, 
-import random       #importing the random library
+from random import randint as rand       #importing the random library
 from MainActor import *
 from Field import *
+from Sparc import *
 import pygame as pg
+from math import copysign
 
 # Initialize Pygame
 pg.init()
@@ -25,8 +27,9 @@ PASTEL_CORAL = (248, 132, 121)
 
 def drawScene():
     #placeholders, will be switched for updateable entities
-    screen.fill((0,0,0))
 
+    screen.fill((0,0,0))
+    
     # health bar
     GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
     pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screen_size[0] // 4 + 5, 10))
@@ -36,9 +39,11 @@ def drawScene():
     pg.draw.rect(screen, PASTEL_CORAL, field.center) 
     
     pg.draw.rect(screen, (255, 0, 0), player.this)
+    
+    pg.draw.rect(screen, (0, 0, 255), sparc.this)
+
 
 def inBounds():
-    # and player.this.left >= field.edge.left and player.this.right <= field.edge.right
     return player.this.bottom <= field.edge.bottom + 10 and player.this.top + 10 >= field.edge.top and player.this.left + 10 >= field.edge.left and player.this.right <= field.edge.right + 10
 
 def inEdge():
@@ -50,11 +55,60 @@ def inEdge():
 
 
 def update(dx, dy):
-    player.this.move_ip(dx, dy)
+    if PUSH and player.edge:
+        player.edge = False
+    
+    if PUSH and inEdge():
+        player.this.move_ip(dx, dy) 
+    elif PUSH:
+        player.this.move_ip(0.5*dx, 0.5*dy) 
+    else:
+        player.this.move_ip(dx, dy)
+
     if player.edge and not inEdge():
-       player.this.move_ip(-dx, -dy)
+       if PUSH:
+        player.this.move_ip(-0.5*dx, -0.5*dy)
+       else:
+        player.this.move_ip(-dx, -dy)
+    elif not player.edge and inEdge():
+        player.edge = True
     if not inBounds():
         player.this.move_ip(-dx, -dy)
+
+def pickOriginal(pos: tuple) -> tuple:
+    new = field.junctions[rand(0, len(field.junctions) - 1)]
+    if pos == new:
+        return pickOriginal(pos)
+    else:
+        return new
+
+
+def updateEnemy():
+
+    pos = sparc.this.topleft    #defining position as top left of sparc
+
+    if pos == sparc.goal or sparc.dir == [0,0]:     #if sparc has reached it's random goal, or has a default val
+        sparc.goal = pickOriginal(pos)              #pickOriginal is a recursive function guaranteeing a new goal, not equal to current position
+        sparc.dir = [copysign(1, sparc.goal[0] - pos[0]), copysign(1, sparc.goal[1] - pos[1])]  #dir is a direction vector, determining where sparc will move
+    elif sparc.this.topleft in field.junctions:     #if sparc is at a junction, we must still recalculate the new direction
+        sparc.dir = [copysign(1, sparc.goal[0] - pos[0]), copysign(1, sparc.goal[1] - pos[1])]
+    
+    #sparc is confined to edges. thus sparc is forced to pick one
+    if pos[0] == sparc.goal[0]:
+        sparc.dir[0] = 0
+    elif pos[1] == sparc.goal[1]:
+        sparc.dir[1] = 0
+    else:
+        sparc.dir[rand(0,1)] = 0    #if sparc is not level with the goal, it will pick a random direction
+
+    sparc.this.move_ip(sparc.dir[0] * 5, sparc.dir[1] * 5)
+
+    #lets hope this don't break when we integrate Ryan's code, eh?
+
+    #add Qix updating here
+    
+
+
 
 #some game states
 KEY_RIGHT = False
@@ -62,12 +116,13 @@ KEY_LEFT = False
 KEY_UP = False
 KEY_DOWN = False
 PUSH = False
-dx = 0
-dy = 0
 player = MainActor()
+
 board_w = 5 * screen_size[1] // 6
 field = Field(Rect(screen_mid[0] - board_w // 2 - 75, screen_mid[1] - board_w // 2, board_w, board_w) , Rect(screen_mid[0] - board_w // 2 - 4 - 75, screen_mid[1] - board_w // 2 - 4, board_w + 8, board_w + 8))
 
+sparc = Sparc(Rect(field.junctions[rand(0, len(field.junctions) - 1)], (15,15)), -10, field.junctions[rand(0, len(field.junctions) - 1)])
+sparc.dir = [copysign(1, sparc.goal[0] - sparc.this.topleft[0]), copysign(1, sparc.goal[1] - sparc.this.topleft[1])]
 # Start the main loop
 while True:
 
@@ -104,20 +159,20 @@ while True:
                 PUSH = False     #if down key is down, the corresponding state is true
 
     #key state handler.
+    dx = 0
+    dy = 0
     if KEY_UP:
         dy = -10
     elif KEY_DOWN:
         dy = 10
-    else:
-        dy = 0
-    if KEY_LEFT:
+    elif KEY_LEFT:
         dx = -10
     elif KEY_RIGHT:
         dx = 10
-    else:
-        dx = 0
 
 
+
+    updateEnemy()
     update(dx, dy)
     drawScene()
     pg.display.flip()      #ok so do you know what a flipbook is? Yeah, this "flips" to the next frame
