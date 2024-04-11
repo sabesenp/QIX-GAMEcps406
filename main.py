@@ -5,6 +5,7 @@ import random       #importing the random library
 from MainActor import *
 from Field import *
 import pygame as pg
+import random
 
 # Initialize Pygame
 pg.init()
@@ -22,6 +23,7 @@ GAME_FONT = pg.freetype.Font("PressStart2P.ttf", screen_size[0]//25)
 PASTEL_CORAL = (248, 132, 121)
 # list of player objects
 trailRects = []
+inEdgeLastFrame = False
 
 
 def drawScene():
@@ -94,6 +96,12 @@ def addTrail(p) -> None:
 def inEdgeTuple(coords) -> bool:
     return coords[0] <= 40 or coords[0] >= 450 \
         or coords[1] <= 35 or coords[1] >= 445
+
+def randomColourGenerator() -> tuple:
+    r = random.randint(0, 255)  
+    g = random.randint(0, 255)  
+    b = random.randint(0,255)
+    return (r, g, b)
         
 
 def fillRect() -> None:
@@ -106,7 +114,7 @@ def fillRect() -> None:
     # find last coord it was touching corner
     # using current and last corner touch, fill area with rect
     # 445 bottom 35 top y    # 40 left 450 right x
-    if inEdge():
+    if inEdge() and not inEdgeLastFrame:
         i = 2 
 
         currPos = trailRects[-1]
@@ -114,8 +122,10 @@ def fillRect() -> None:
             i = i + 1
 
         lastEdgeTouch = trailRects[-i]
+        MIDX = (450 + 40) / 2
+        MIDY = (445 + 35) / 2
         # fail safe if f doesn't fall in any cases below
-        f = Rect(1000, 1000, 100, 100)
+        f = Rect(1000, 1000, 1, 1)
 
         # reminder: y larger going down
         # x larger going right
@@ -125,27 +135,47 @@ def fillRect() -> None:
                 f = Rect(currPos[0] - (currPos[0] - lastEdgeTouch[0]), currPos[1], currPos[0] - lastEdgeTouch[0], lastEdgeTouch[1] - currPos[1])
             elif whichEdge() == "left":
                 f = Rect(currPos[0], currPos[1], lastEdgeTouch[0] - currPos[0], lastEdgeTouch[1] - currPos[1])
+            elif whichEdge() == "top":
+                if currPos[0] >= MIDX:
+                    f = Rect(currPos[0], currPos[1], 450 - currPos[0], 410)
+                else:
+                    f = Rect(40, 35, currPos[0] - 40, 410)
 
         elif whichEdgeTuple(lastEdgeTouch) == "left":
             if whichEdge() == "bottom":
                 f = Rect(currPos[0] + (lastEdgeTouch[0] - currPos[0]), lastEdgeTouch[1], currPos[0] - lastEdgeTouch[0], currPos[1] - lastEdgeTouch[1])
             elif whichEdge() == "top":
                 f = Rect(currPos[0] + (lastEdgeTouch[0] - currPos[0]), currPos[1], currPos[0] - lastEdgeTouch[0], lastEdgeTouch[1] - currPos[1])
+            elif whichEdge() == "right":
+                if currPos[1] <= MIDY:
+                    f = Rect(40, 35, 410, currPos[1] - 35)
+                else:
+                    f = Rect(lastEdgeTouch[0], lastEdgeTouch[1], 410, 445 - lastEdgeTouch[1])
 
         elif whichEdgeTuple(lastEdgeTouch) == "top":
             if whichEdge() == "right":
                 f = Rect(lastEdgeTouch[0], lastEdgeTouch[1], currPos[0] - lastEdgeTouch[0], currPos[1] - lastEdgeTouch[1])
             elif whichEdge() == "left":
                 f = Rect(currPos[0], lastEdgeTouch[1], lastEdgeTouch[0] - currPos[0], currPos[1] - lastEdgeTouch[1])
+            elif whichEdge() == "bottom":
+                if currPos[0] >= MIDX:
+                    f = Rect(lastEdgeTouch[0], lastEdgeTouch[1], 450 - currPos[0], 410)
+                else:
+                    f = Rect(40, 35, currPos[0] - 40, 410)
 
         elif whichEdgeTuple(lastEdgeTouch) == "right":
             if whichEdge() == "top":
                 f = Rect(currPos[0], currPos[1], lastEdgeTouch[0] - currPos[0], lastEdgeTouch[1] - currPos[1])
             elif whichEdge() == "bottom":
                 f = Rect(currPos[0], lastEdgeTouch[1], lastEdgeTouch[0] - currPos[0], currPos[1] - lastEdgeTouch[1])
+            elif whichEdge() == "left":
+                if currPos[1] <= MIDY:
+                    f = Rect(40, 35, 410, currPos[1] - 35)
+                else:
+                    f = Rect(currPos[0], currPos[1], 410, 445 - lastEdgeTouch[1])     
 
 
-        pg.draw.rect(screen, (0, 100, 0), f)
+        pg.draw.rect(screen, randomColourGenerator(), f)
 
         
 #some game states
@@ -211,6 +241,12 @@ while True:
         dx = -10
     elif KEY_RIGHT:
         dx = 10
+
+    # a flag for fillRect() so it doesn't keep filling every frame
+    if inEdge():
+        inEdgeLastFrame = True
+    else:
+        inEdgeLastFrame = False
 
 
     update(dx, dy)
