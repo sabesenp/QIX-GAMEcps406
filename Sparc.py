@@ -1,9 +1,11 @@
 from pygame import *
-from Enemy import *
+from math import copysign
 
-class Sparc(Enemy):
+class Sparc:
         def __init__(self, this, dmg, goal):
-                super().__init__(this, dmg, True, goal)
+                self.this = this
+                self.dmg = dmg
+                self.edge = True
+                self.goal=goal
+                self.dir=[0, 0]
         
-        def pickNewPos():
-                return (0, 0)

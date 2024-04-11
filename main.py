@@ -1,11 +1,12 @@
 #all game related logic happens here. calls are made to externals
 #this is a change
 #this block of code is setting up the screen, libraries, 
-import random       #importing the random library
+from random import randint as rand       #importing the random library
 from MainActor import *
 from Field import *
 from Sparc import *
 import pygame as pg
+from math import copysign
 
 # Initialize Pygame
 pg.init()
@@ -38,6 +39,9 @@ def drawScene():
     pg.draw.rect(screen, PASTEL_CORAL, field.center) 
     
     pg.draw.rect(screen, (255, 0, 0), player.this)
+    
+    pg.draw.rect(screen, (0, 0, 255), sparc.this)
+
 
 def inBounds():
     return player.this.bottom <= field.edge.bottom + 10 and player.this.top + 10 >= field.edge.top and player.this.left + 10 >= field.edge.left and player.this.right <= field.edge.right + 10
@@ -71,6 +75,39 @@ def update(dx, dy):
     if not inBounds():
         player.this.move_ip(-dx, -dy)
 
+def pickOriginal(pos: tuple) -> tuple:
+    new = field.junctions[rand(0, len(field.junctions) - 1)]
+    if pos == new:
+        return pickOriginal(pos)
+    else:
+        return new
+
+
+def updateEnemy():
+
+    pos = sparc.this.topleft    #defining position as top left of sparc
+
+    if pos == sparc.goal or sparc.dir == [0,0]:     #if sparc has reached it's random goal, or has a default val
+        sparc.goal = pickOriginal(pos)              #pickOriginal is a recursive function guaranteeing a new goal, not equal to current position
+        sparc.dir = [copysign(1, sparc.goal[0] - pos[0]), copysign(1, sparc.goal[1] - pos[1])]  #dir is a direction vector, determining where sparc will move
+    elif sparc.this.topleft in field.junctions:     #if sparc is at a junction, we must still recalculate the new direction
+        sparc.dir = [copysign(1, sparc.goal[0] - pos[0]), copysign(1, sparc.goal[1] - pos[1])]
+    
+    #sparc is confined to edges. thus sparc is forced to pick one
+    if pos[0] == sparc.goal[0]:
+        sparc.dir[0] = 0
+    elif pos[1] == sparc.goal[1]:
+        sparc.dir[1] = 0
+    else:
+        sparc.dir[rand(0,1)] = 0    #if sparc is not level with the goal, it will pick a random direction
+
+    sparc.this.move_ip(sparc.dir[0] * 5, sparc.dir[1] * 5)
+
+    #lets hope this don't break when we integrate Ryan's code, eh?
+    
+
+
+
 #some game states
 KEY_RIGHT = False
 KEY_LEFT = False
@@ -78,9 +115,12 @@ KEY_UP = False
 KEY_DOWN = False
 PUSH = False
 player = MainActor()
+
 board_w = 5 * screen_size[1] // 6
 field = Field(Rect(screen_mid[0] - board_w // 2 - 75, screen_mid[1] - board_w // 2, board_w, board_w) , Rect(screen_mid[0] - board_w // 2 - 4 - 75, screen_mid[1] - board_w // 2 - 4, board_w + 8, board_w + 8))
 
+sparc = Sparc(Rect(field.junctions[rand(0, len(field.junctions) - 1)], (15,15)), -10, field.junctions[rand(0, len(field.junctions) - 1)])
+sparc.dir = [copysign(1, sparc.goal[0] - sparc.this.topleft[0]), copysign(1, sparc.goal[1] - sparc.this.topleft[1])]
 # Start the main loop
 while True:
 
@@ -130,6 +170,7 @@ while True:
 
 
 
+    updateEnemy()
     update(dx, dy)
     drawScene()
     pg.display.flip()      #ok so do you know what a flipbook is? Yeah, this "flips" to the next frame
