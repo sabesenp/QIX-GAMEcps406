@@ -1,7 +1,7 @@
 from pygame import *
 from math import copysign
 
-class Sparc:
+class Qix:
         def __init__(self, this, dmg, goal):
                 self.this = this
                 self.dmg = dmg
