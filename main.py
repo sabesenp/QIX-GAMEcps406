@@ -104,6 +104,8 @@ def updateEnemy():
     sparc.this.move_ip(sparc.dir[0] * 5, sparc.dir[1] * 5)
 
     #lets hope this don't break when we integrate Ryan's code, eh?
+
+    #add Qix updating here
     
 
 
