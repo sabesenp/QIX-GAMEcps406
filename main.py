@@ -22,49 +22,64 @@ screen_size = pg.display.get_window_size()
 screen_mid = (screen_size[0] // 2, screen_size[1] // 2)
 GAME_FONT = pg.freetype.Font("PressStart2P.ttf", screen_size[0]//25)
 PASTEL_CORAL = (248, 132, 121)
-
+# list of player objects
+trailRects = []
+inEdgeLastFrame = False
 
 
 def drawScene():
     #placeholders, will be switched for updateable entities
+    # screen.fill((0,0,0))
 
-    screen.fill((0,0,0))
-    
     # health bar
     GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
-    pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screen_size[0] // 4 + 5, 10))
-
 
     pg.draw.rect(screen, (255, 255, 255), field.edge, 10) 
-    pg.draw.rect(screen, PASTEL_CORAL, field.center) 
     
     pg.draw.rect(screen, (255, 0, 0), player.this)
-    
-    pg.draw.rect(screen, (0, 0, 255), sparc.this)
+
+    #pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screen_size[0] // 4 + 5, 10))
 
 
-def inBounds():
+
+
+def inBounds() -> bool:
+    # and player.this.left >= field.edge.left and player.this.right <= field.edge.right
     return player.this.bottom <= field.edge.bottom + 10 and player.this.top + 10 >= field.edge.top and player.this.left + 10 >= field.edge.left and player.this.right <= field.edge.right + 10
 
-def inEdge():
+def inEdge() -> bool:
     if not inBounds():
         return False
     
     if player.this.centerx <= 40 or player.this.centerx >= 450 or player.this.centery <= 35 or player.this.centery >= 445:
         return True
 
+def whichEdge() -> str:
+    if inEdge():
+        if player.this.centerx <= 40:
+            return "left"
+        if player.this.centerx >= 450:
+            return "right"
+        if player.this.centery <= 35:
+            return "top"
+        if player.this.centery >= 445:
+            return "bottom"
+    return "no"
 
-def update(dx, dy):
-    if PUSH and player.edge:
-        player.edge = False
-    
-    if PUSH and inEdge():
-        player.this.move_ip(dx, dy) 
-    elif PUSH:
-        player.this.move_ip(0.5*dx, 0.5*dy) 
-    else:
-        player.this.move_ip(dx, dy)
+def whichEdgeTuple(coords) -> str:
+    if inEdge():
+        if coords[0] <= 40:
+            return "left"
+        if coords[0] >= 450:
+            return "right"
+        if coords[1] <= 35:
+            return "top"
+        if coords[1] >= 445:
+            return "bottom"
+    return "no"
 
+
+def update(dx, dy) -> None:
     if player.edge and not inEdge():
        if PUSH:
         player.this.move_ip(-0.5*dx, -0.5*dy)
@@ -75,6 +90,98 @@ def update(dx, dy):
     if not inBounds():
         player.this.move_ip(-dx, -dy)
 
+def addTrail(p) -> None:
+    # coords are stored in tuples (x, y)
+    # ignores duplicate coords
+    if len(trailRects) <= 0 or not (trailRects[-1][0] == p.this.centerx and trailRects[-1][1] == p.this.centery):
+        trailRects.append((p.this.centerx, p.this.centery))
+
+
+def inEdgeTuple(coords) -> bool:
+    return coords[0] <= 40 or coords[0] >= 450 \
+        or coords[1] <= 35 or coords[1] >= 445
+
+def randomColourGenerator() -> tuple:
+    r = random.randint(0, 255)  
+    g = random.randint(0, 255)  
+    b = random.randint(0,255)
+    return (r, g, b)
+        
+
+def fillRect() -> None:
+    if len(trailRects) < 2:
+        return
+    if inEdgeTuple(trailRects[-1]) and inEdgeTuple(trailRects[-2]):
+        return
+    # store current coords
+    # go through previous coords stored in trailRects
+    # find last coord it was touching corner
+    # using current and last corner touch, fill area with rect
+    # 445 bottom 35 top y    # 40 left 450 right x
+    if inEdge() and not inEdgeLastFrame:
+        i = 2 
+
+        currPos = trailRects[-1]
+        while not inEdgeTuple(trailRects[-i]):
+            i = i + 1
+
+        lastEdgeTouch = trailRects[-i]
+        MIDX = (450 + 40) / 2
+        MIDY = (445 + 35) / 2
+        # fail safe if f doesn't fall in any cases below
+        f = Rect(1000, 1000, 1, 1)
+
+        # reminder: y larger going down
+        # x larger going right
+
+        if whichEdgeTuple(lastEdgeTouch) == "bottom":
+            if whichEdge() == "right":
+                f = Rect(currPos[0] - (currPos[0] - lastEdgeTouch[0]), currPos[1], currPos[0] - lastEdgeTouch[0], lastEdgeTouch[1] - currPos[1])
+            elif whichEdge() == "left":
+                f = Rect(currPos[0], currPos[1], lastEdgeTouch[0] - currPos[0], lastEdgeTouch[1] - currPos[1])
+            elif whichEdge() == "top":
+                if currPos[0] >= MIDX:
+                    f = Rect(currPos[0], currPos[1], 450 - currPos[0], 410)
+                else:
+                    f = Rect(40, 35, currPos[0] - 40, 410)
+
+        elif whichEdgeTuple(lastEdgeTouch) == "left":
+            if whichEdge() == "bottom":
+                f = Rect(currPos[0] + (lastEdgeTouch[0] - currPos[0]), lastEdgeTouch[1], currPos[0] - lastEdgeTouch[0], currPos[1] - lastEdgeTouch[1])
+            elif whichEdge() == "top":
+                f = Rect(currPos[0] + (lastEdgeTouch[0] - currPos[0]), currPos[1], currPos[0] - lastEdgeTouch[0], lastEdgeTouch[1] - currPos[1])
+            elif whichEdge() == "right":
+                if currPos[1] <= MIDY:
+                    f = Rect(40, 35, 410, currPos[1] - 35)
+                else:
+                    f = Rect(lastEdgeTouch[0], lastEdgeTouch[1], 410, 445 - lastEdgeTouch[1])
+
+        elif whichEdgeTuple(lastEdgeTouch) == "top":
+            if whichEdge() == "right":
+                f = Rect(lastEdgeTouch[0], lastEdgeTouch[1], currPos[0] - lastEdgeTouch[0], currPos[1] - lastEdgeTouch[1])
+            elif whichEdge() == "left":
+                f = Rect(currPos[0], lastEdgeTouch[1], lastEdgeTouch[0] - currPos[0], currPos[1] - lastEdgeTouch[1])
+            elif whichEdge() == "bottom":
+                if currPos[0] >= MIDX:
+                    f = Rect(lastEdgeTouch[0], lastEdgeTouch[1], 450 - currPos[0], 410)
+                else:
+                    f = Rect(40, 35, currPos[0] - 40, 410)
+
+        elif whichEdgeTuple(lastEdgeTouch) == "right":
+            if whichEdge() == "top":
+                f = Rect(currPos[0], currPos[1], lastEdgeTouch[0] - currPos[0], lastEdgeTouch[1] - currPos[1])
+            elif whichEdge() == "bottom":
+                f = Rect(currPos[0], lastEdgeTouch[1], lastEdgeTouch[0] - currPos[0], currPos[1] - lastEdgeTouch[1])
+            elif whichEdge() == "left":
+                if currPos[1] <= MIDY:
+                    f = Rect(40, 35, 410, currPos[1] - 35)
+                else:
+                    f = Rect(currPos[0], currPos[1], 410, 445 - lastEdgeTouch[1])     
+
+
+        pg.draw.rect(screen, randomColourGenerator(), f)
+
+        
 def pickOriginal(pos: tuple) -> tuple:
     new = field.junctions[rand(0, len(field.junctions) - 1)]
     if pos == new:
@@ -120,11 +227,16 @@ player = MainActor()
 
 board_w = 5 * screen_size[1] // 6
 field = Field(Rect(screen_mid[0] - board_w // 2 - 75, screen_mid[1] - board_w // 2, board_w, board_w) , Rect(screen_mid[0] - board_w // 2 - 4 - 75, screen_mid[1] - board_w // 2 - 4, board_w + 8, board_w + 8))
-
+pg.draw.rect(screen, PASTEL_CORAL, field.center)
 sparc = Sparc(Rect(field.junctions[rand(0, len(field.junctions) - 1)], (15,15)), -10, field.junctions[rand(0, len(field.junctions) - 1)])
 sparc.dir = [copysign(1, sparc.goal[0] - sparc.this.topleft[0]), copysign(1, sparc.goal[1] - sparc.this.topleft[1])]
+
+
 # Start the main loop
 while True:
+    
+    addTrail(player)
+    fillRect()
 
     # Check for events
     for event in pg.event.get():
@@ -170,11 +282,16 @@ while True:
     elif KEY_RIGHT:
         dx = 10
 
+    # a flag for fillRect() so it doesn't keep filling every frame
+    if inEdge():
+        inEdgeLastFrame = True
+    else:
+        inEdgeLastFrame = False
 
 
     updateEnemy()
     update(dx, dy)
     drawScene()
     pg.display.flip()      #ok so do you know what a flipbook is? Yeah, this "flips" to the next frame
-    pg.time.Clock().tick(60)                     #waits long enough to have 60 fps
+    pg.time.Clock().tick(15)                     #waits long enough to have 60 fps
 
