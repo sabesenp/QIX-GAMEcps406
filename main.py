@@ -33,12 +33,14 @@ def drawScene():
 
     # health bar
     GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
+    pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screen_size[0] // 4 + 5, 10))
 
     pg.draw.rect(screen, (255, 255, 255), field.edge, 10) 
     
     pg.draw.rect(screen, (255, 0, 0), player.this)
+    pg.draw.rect(screen,(0,255,0),sparc.this)
 
-    #pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screen_size[0] // 4 + 5, 10))
+    
 
 
 
@@ -102,9 +104,9 @@ def inEdgeTuple(coords) -> bool:
         or coords[1] <= 35 or coords[1] >= 445
 
 def randomColourGenerator() -> tuple:
-    r = random.randint(0, 255)  
-    g = random.randint(0, 255)  
-    b = random.randint(0,255)
+    r = rand(0, 255)  
+    g = rand(0, 255)  
+    b = rand(0,255)
     return (r, g, b)
         
 
@@ -274,13 +276,13 @@ while True:
     dx = 0
     dy = 0
     if KEY_UP:
-        dy = -10
-    elif KEY_DOWN:
         dy = 10
+    elif KEY_DOWN:
+        dy = -10
     elif KEY_LEFT:
-        dx = -10
-    elif KEY_RIGHT:
         dx = 10
+    elif KEY_RIGHT:
+        dx = -10
 
     # a flag for fillRect() so it doesn't keep filling every frame
     if inEdge():
@@ -293,5 +295,5 @@ while True:
     update(dx, dy)
     drawScene()
     pg.display.flip()      #ok so do you know what a flipbook is? Yeah, this "flips" to the next frame
-    pg.time.Clock().tick(15)                     #waits long enough to have 60 fps
+    pg.time.Clock().tick(60)                     #waits long enough to have 60 fps
 
