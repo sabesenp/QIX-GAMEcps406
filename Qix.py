@@ -7,4 +7,4 @@ class Qix:
                 self.dmg = dmg
                 self.edge = False
                 self.goal=goal
-                self.dir=[0, 0]
+                self.dir=(0,0)

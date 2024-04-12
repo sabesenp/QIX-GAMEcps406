@@ -5,6 +5,7 @@ from random import randint as rand       #importing the random library
 from MainActor import *
 from Field import *
 from Sparc import *
+from Qix import *
 import pygame as pg
 from math import copysign
 
@@ -29,16 +30,19 @@ inEdgeLastFrame = False
 
 def drawScene():
     #placeholders, will be switched for updateable entities
-    # screen.fill((0,0,0))
+    screen.fill((100,100,100))
 
     # health bar
     GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
     pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screen_size[0] // 4 + 5, 10))
 
+    pg.draw.rect(screen, PASTEL_CORAL, field.center)
     pg.draw.rect(screen, (255, 255, 255), field.edge, 10) 
+
     
     pg.draw.rect(screen, (255, 0, 0), player.this)
     pg.draw.rect(screen,(0,255,0),sparc.this)
+    pg.draw.rect(screen,(0,0,255),qix.this)
 
     
 
@@ -82,6 +86,16 @@ def whichEdgeTuple(coords) -> str:
 
 
 def update(dx, dy) -> None:
+    if PUSH and player.edge:
+        player.edge = False
+    
+    if PUSH and inEdge():
+        player.this.move_ip(dx, dy) 
+    elif PUSH:
+        player.this.move_ip(0.5*dx, 0.5*dy) 
+    else:
+        player.this.move_ip(dx, dy)
+
     if player.edge and not inEdge():
        if PUSH:
         player.this.move_ip(-0.5*dx, -0.5*dy)
@@ -100,8 +114,7 @@ def addTrail(p) -> None:
 
 
 def inEdgeTuple(coords) -> bool:
-    return coords[0] <= 40 or coords[0] >= 450 \
-        or coords[1] <= 35 or coords[1] >= 445
+    return coords[0] <= 40 or coords[0] >= 450 or coords[1] <= 35 or coords[1] >= 445
 
 def randomColourGenerator() -> tuple:
     r = rand(0, 255)  
@@ -211,10 +224,30 @@ def updateEnemy():
         sparc.dir[rand(0,1)] = 0    #if sparc is not level with the goal, it will pick a random direction
 
     sparc.this.move_ip(sparc.dir[0] * 5, sparc.dir[1] * 5)
+    pos = sparc.this.topleft    #defining position as top left of sparc
 
+    if not (pos[0] == 33 or pos[0] == 443 or pos[1] == 28 or pos[1] == 438):
+        sparc.this.move_ip(sparc.dir[0] * -5, sparc.dir[1] * -5)
     #lets hope this don't break when we integrate Ryan's code, eh?
 
     #add Qix updating here
+    pos = qix.this.center
+    if qix.goal == (0,0) or closeEnough(pos):
+        qix.goal = (rand(field.center.left + 20, field.center.right - 20),rand(field.center.top+20, field.center.bottom-20))    #add goal generator
+        #calculate direction
+        qix.dir = (copysign(1, qix.goal[0] - pos[0]), copysign(1, qix.goal[1] - pos[1]))
+    else:
+        print(qix.goal, end=", ")
+        print(pos)
+        dx = rand(0, 10)
+        dy = rand(0, 10)
+        qix.this.move_ip(qix.dir[0] * dx, qix.dir[1] * dy)
+        
+
+
+def closeEnough(pos):
+    return abs(pos[0] - qix.goal[0]) <= 9 or abs(pos[1] - qix.goal[1]) <= 9
+    
     
 
 
@@ -229,10 +262,9 @@ player = MainActor()
 
 board_w = 5 * screen_size[1] // 6
 field = Field(Rect(screen_mid[0] - board_w // 2 - 75, screen_mid[1] - board_w // 2, board_w, board_w) , Rect(screen_mid[0] - board_w // 2 - 4 - 75, screen_mid[1] - board_w // 2 - 4, board_w + 8, board_w + 8))
-pg.draw.rect(screen, PASTEL_CORAL, field.center)
 sparc = Sparc(Rect(field.junctions[rand(0, len(field.junctions) - 1)], (15,15)), -10, field.junctions[rand(0, len(field.junctions) - 1)])
 sparc.dir = [copysign(1, sparc.goal[0] - sparc.this.topleft[0]), copysign(1, sparc.goal[1] - sparc.this.topleft[1])]
-
+qix = Qix(Rect(200, 200, 40, 40), -20, (0, 0))
 
 # Start the main loop
 while True:
