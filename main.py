@@ -27,7 +27,7 @@ PASTEL_CORAL = (248, 132, 121)
 trailRects = []
 inEdgeLastFrame = False
 
-
+'''
 def whichEdge() -> str:
     if inEdge():
         if player.this.centerx <= 40:
@@ -129,7 +129,7 @@ def fillRect() -> None:
 
 
         pg.draw.rect(screen, randomColourGenerator(), f)
-
+'''
 
 #the following functions work. Do not change 
 def addTrail(p) -> None:
@@ -149,7 +149,7 @@ def drawScene():
     pg.draw.rect(screen, PASTEL_CORAL, field.center)
     pg.draw.rect(screen, (255, 255, 255), field.edge, 10) 
     for trail in trailRects:
-        pg.draw.circle(screen,(255,255,255),trail,5)
+        pg.draw.rect(screen,(255,255,255),(trail[0]-5,trail[1]-5,10,10))
 
     
     pg.draw.rect(screen, (255, 0, 0), player.this)
@@ -175,25 +175,26 @@ def pickOriginal(pos: tuple) -> tuple:
         return new
 
 def update(dx, dy) -> None:
-    if PUSH and player.edge:
+    if PUSH:
+        dx *= 0.5
+        dy *= 0.5
         player.edge = False
-    
-    if PUSH and inEdge():
-        player.this.move_ip(dx, dy) 
-    elif PUSH:
-        player.this.move_ip(0.5*dx, 0.5*dy) 
-    else:
-        player.this.move_ip(dx, dy)
 
-    if player.edge and not inEdge():
-       if PUSH:
-        player.this.move_ip(-0.5*dx, -0.5*dy)
-       else:
-        player.this.move_ip(-dx, -dy)
-    elif not player.edge and inEdge():
+    player.this.move_ip(dx, dy)
+    if inEdge() and not player.edge:
         player.edge = True
-    if not inBounds():
+    elif player.edge and not inEdge():    #correction for player attempting to leave edge without push
         player.this.move_ip(-dx, -dy)
+    elif not inBounds():
+        player.this.move_ip(-dx, -dy)
+
+    #add a function to correct position. when touchEdge() check every possible edge case
+    #
+
+
+#add new function touchEdge. If the player is touching the edge, return True.
+#used in update to snap player to edge
+
 
 def updateEnemy():
 
@@ -259,7 +260,7 @@ pg.draw.rect(screen, PASTEL_CORAL, field.center)
 while True:
     
     addTrail(player)
-    fillRect()
+    #fillRect()
 
     # Check for events
     for event in pg.event.get():
@@ -316,5 +317,6 @@ while True:
     update(dx, dy)
     drawScene()
     pg.display.flip()      #ok so do you know what a flipbook is? Yeah, this "flips" to the next frame
+    print(inEdge())
     pg.time.Clock().tick(60)                     #waits long enough to have 60 fps
 
