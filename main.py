@@ -28,38 +28,6 @@ trailRects = []
 inEdgeLastFrame = False
 
 
-def drawScene():
-    #placeholders, will be switched for updateable entities
-    screen.fill((100,100,100))
-
-    # health bar
-    GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
-    pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screen_size[0] // 4 + 5, 10))
-
-    pg.draw.rect(screen, PASTEL_CORAL, field.center)
-    pg.draw.rect(screen, (255, 255, 255), field.edge, 10) 
-
-    
-    pg.draw.rect(screen, (255, 0, 0), player.this)
-    pg.draw.rect(screen,(0,255,0),sparc.this)
-    pg.draw.rect(screen,(0,0,255),qix.this)
-
-    
-
-
-
-
-def inBounds() -> bool:
-    # and player.this.left >= field.edge.left and player.this.right <= field.edge.right
-    return player.this.bottom <= field.edge.bottom + 10 and player.this.top + 10 >= field.edge.top and player.this.left + 10 >= field.edge.left and player.this.right <= field.edge.right + 10
-
-def inEdge() -> bool:
-    if not inBounds():
-        return False
-    
-    if player.this.centerx <= 40 or player.this.centerx >= 450 or player.this.centery <= 35 or player.this.centery >= 445:
-        return True
-
 def whichEdge() -> str:
     if inEdge():
         if player.this.centerx <= 40:
@@ -84,45 +52,11 @@ def whichEdgeTuple(coords) -> str:
             return "bottom"
     return "no"
 
-
-def update(dx, dy) -> None:
-    if PUSH and player.edge:
-        player.edge = False
-    
-    if PUSH and inEdge():
-        player.this.move_ip(dx, dy) 
-    elif PUSH:
-        player.this.move_ip(0.5*dx, 0.5*dy) 
-    else:
-        player.this.move_ip(dx, dy)
-
-    if player.edge and not inEdge():
-       if PUSH:
-        player.this.move_ip(-0.5*dx, -0.5*dy)
-       else:
-        player.this.move_ip(-dx, -dy)
-    elif not player.edge and inEdge():
-        player.edge = True
-    if not inBounds():
-        player.this.move_ip(-dx, -dy)
-
-def addTrail(p) -> None:
-    # coords are stored in tuples (x, y)
-    # ignores duplicate coords
-    if len(trailRects) <= 0 or not (trailRects[-1][0] == p.this.centerx and trailRects[-1][1] == p.this.centery):
-        trailRects.append((p.this.centerx, p.this.centery))
-
-
 def inEdgeTuple(coords) -> bool:
     return coords[0] <= 40 or coords[0] >= 450 or coords[1] <= 35 or coords[1] >= 445
-
-def randomColourGenerator() -> tuple:
-    r = rand(0, 255)  
-    g = rand(0, 255)  
-    b = rand(0,255)
-    return (r, g, b)
         
-
+#notes: add rects generated to a new attribute of field, claimRects
+#claim rects simply holds the captures for reference and illustrations
 def fillRect() -> None:
     if len(trailRects) < 2:
         return
@@ -196,7 +130,43 @@ def fillRect() -> None:
 
         pg.draw.rect(screen, randomColourGenerator(), f)
 
-        
+
+#the following functions work. Do not change 
+def addTrail(p) -> None:
+    # coords are stored in tuples (x, y)
+    # ignores duplicate coords
+    if len(trailRects) <= 0 or not (trailRects[-1][0] == p.this.centerx and trailRects[-1][1] == p.this.centery):
+        trailRects.append((p.this.centerx, p.this.centery))
+
+def drawScene():
+    #placeholders, will be switched for updateable entities
+    screen.fill((100,100,100))
+
+    # health bar
+    GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
+    pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screen_size[0] // 4 + 5, 10))
+
+    pg.draw.rect(screen, PASTEL_CORAL, field.center)
+    pg.draw.rect(screen, (255, 255, 255), field.edge, 10) 
+    for trail in trailRects:
+        pg.draw.circle(screen,(255,255,255),trail,5)
+
+    
+    pg.draw.rect(screen, (255, 0, 0), player.this)
+    pg.draw.rect(screen,(0,255,0),sparc.this)
+    pg.draw.rect(screen,(0,0,255),qix.this)
+
+def inBounds() -> bool:
+    # and player.this.left >= field.edge.left and player.this.right <= field.edge.right
+    return player.this.bottom <= field.edge.bottom + 10 and player.this.top + 10 >= field.edge.top and player.this.left + 10 >= field.edge.left and player.this.right <= field.edge.right + 10
+
+def inEdge() -> bool:
+    if not inBounds():
+        return False
+    
+    if player.this.centerx <= 40 or player.this.centerx >= 450 or player.this.centery <= 35 or player.this.centery >= 445:
+        return True
+
 def pickOriginal(pos: tuple) -> tuple:
     new = field.junctions[rand(0, len(field.junctions) - 1)]
     if pos == new:
@@ -204,6 +174,26 @@ def pickOriginal(pos: tuple) -> tuple:
     else:
         return new
 
+def update(dx, dy) -> None:
+    if PUSH and player.edge:
+        player.edge = False
+    
+    if PUSH and inEdge():
+        player.this.move_ip(dx, dy) 
+    elif PUSH:
+        player.this.move_ip(0.5*dx, 0.5*dy) 
+    else:
+        player.this.move_ip(dx, dy)
+
+    if player.edge and not inEdge():
+       if PUSH:
+        player.this.move_ip(-0.5*dx, -0.5*dy)
+       else:
+        player.this.move_ip(-dx, -dy)
+    elif not player.edge and inEdge():
+        player.edge = True
+    if not inBounds():
+        player.this.move_ip(-dx, -dy)
 
 def updateEnemy():
 
@@ -237,20 +227,18 @@ def updateEnemy():
         #calculate direction
         qix.dir = (copysign(1, qix.goal[0] - pos[0]), copysign(1, qix.goal[1] - pos[1]))
     else:
-        print(qix.goal, end=", ")
-        print(pos)
         dx = rand(0, 10)
         dy = rand(0, 10)
         qix.this.move_ip(qix.dir[0] * dx, qix.dir[1] * dy)
         
-
-
 def closeEnough(pos):
     return abs(pos[0] - qix.goal[0]) <= 9 or abs(pos[1] - qix.goal[1]) <= 9
     
-    
-
-
+def randomColourGenerator() -> tuple:
+    r = rand(0, 255)  
+    g = rand(0, 255)  
+    b = rand(0,255)
+    return (r, g, b)
 
 #some game states
 KEY_RIGHT = False
@@ -266,6 +254,7 @@ sparc = Sparc(Rect(field.junctions[rand(0, len(field.junctions) - 1)], (15,15)),
 sparc.dir = [copysign(1, sparc.goal[0] - sparc.this.topleft[0]), copysign(1, sparc.goal[1] - sparc.this.topleft[1])]
 qix = Qix(Rect(200, 200, 40, 40), -20, (0, 0))
 
+pg.draw.rect(screen, PASTEL_CORAL, field.center)
 # Start the main loop
 while True:
     
@@ -308,13 +297,13 @@ while True:
     dx = 0
     dy = 0
     if KEY_UP:
-        dy = 10
-    elif KEY_DOWN:
         dy = -10
+    elif KEY_DOWN:
+        dy = 10
     elif KEY_LEFT:
-        dx = 10
-    elif KEY_RIGHT:
         dx = -10
+    elif KEY_RIGHT:
+        dx = 10
 
     # a flag for fillRect() so it doesn't keep filling every frame
     if inEdge():
