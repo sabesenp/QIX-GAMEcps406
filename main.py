@@ -147,7 +147,7 @@ def drawScene():
 
     # health bar
     GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
-    pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screen_size[0] // 4 + 5, 10))
+    pg.draw.rect(screen, (255, 0, 0),(150, 10, (3 * screen_size[0] // 4 + 5) * (player.health / 100), 10))
 
     pg.draw.rect(screen, PASTEL_CORAL, field.center)
     pg.draw.rect(screen, (255, 255, 255), field.edge, 10) 
@@ -272,9 +272,10 @@ def randomColourGenerator() -> tuple:
 def damageCheckSparc():
     global sparcDamageBuff
     if sparc.this.centerx - 5 <= player.this.centerx <= sparc.this.centerx + 5 \
-        and sparc.this.centery - 5 <= player.this.centery <= sparc.this.centery and inEdge():
+        and sparc.this.centery - 5 <= player.this.centery <= sparc.this.centery and player.edge:
         if sparcDamageBuff == 0:
             player.health = player.health - 20
+            player.this.update(215,440,10,10)
             print("player hit sparc")
         elif sparcDamageBuff == 10:
             sparcDamageBuff = 0
@@ -286,10 +287,10 @@ def damageCheckSparc():
 
 def damageCheckQIX():
     global QIXDamageBuff
-    if qix.this.centerx - 5 <= player.this.centerx <= qix.this.centerx + 5 \
-        and qix.this.centery - 5 <= player.this.centery <= qix.this.centery and not inEdge():
+    if qix.this.colliderect(player.this):
         if QIXDamageBuff == 0:
             player.health = player.health - 20
+            player.this.update(215,440,10,10)
             print("player hit qix")
         elif QIXDamageBuff == 10:
             QIXDamageBuff = 0
@@ -377,6 +378,5 @@ while True:
     update(dx, dy)
     drawScene()
     pg.display.flip()      #ok so do you know what a flipbook is? Yeah, this "flips" to the next frame
-    # print(inEdge())
     pg.time.Clock().tick(60)                     #waits long enough to have 60 fps
 
