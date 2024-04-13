@@ -4,6 +4,6 @@ class MainActor:
         self.this = this
         self.health = health
         self.edge = edge
-        self.path_pnt = this.center
+        self.last_edge = "bottom"
 
     

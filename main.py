@@ -24,10 +24,15 @@ screen_mid = (screen_size[0] // 2, screen_size[1] // 2)
 GAME_FONT = pg.freetype.Font("PressStart2P.ttf", screen_size[0]//25)
 PASTEL_CORAL = (248, 132, 121)
 # list of player objects
-trailRects = []
+trail_pnts = []
+fund = {(450, 35), (40, 35), (40, 445), (450, 445)}
+hold = []
+shape_list = []
+pointer = 0
+capRects = []
 inEdgeLastFrame = False
 
-'''
+
 def whichEdge() -> str:
     if inEdge():
         if player.this.centerx <= 40:
@@ -58,23 +63,23 @@ def inEdgeTuple(coords) -> bool:
 #notes: add rects generated to a new attribute of field, claimRects
 #claim rects simply holds the captures for reference and illustrations
 def fillRect() -> None:
-    if len(trailRects) < 2:
+    if len(trail_pnts) < 2:
         return
-    if inEdgeTuple(trailRects[-1]) and inEdgeTuple(trailRects[-2]):
+    if inEdgeTuple(trail_pnts[-1]) and inEdgeTuple(trail_pnts[-2]):
         return
     # store current coords
-    # go through previous coords stored in trailRects
+    # go through previous coords stored in trail_pnts
     # find last coord it was touching corner
     # using current and last corner touch, fill area with rect
     # 445 bottom 35 top y    # 40 left 450 right x
     if inEdge() and not inEdgeLastFrame:
-        i = 2 
+        i = 1
 
-        currPos = trailRects[-1]
-        while not inEdgeTuple(trailRects[-i]):
+        currPos = trail_pnts[-1]
+        while not inEdgeTuple(trail_pnts[-i]):
             i = i + 1
 
-        lastEdgeTouch = trailRects[-i]
+        lastEdgeTouch = trail_pnts[-i]
         MIDX = (450 + 40) / 2
         MIDY = (445 + 35) / 2
         # fail safe if f doesn't fall in any cases below
@@ -127,16 +132,61 @@ def fillRect() -> None:
                 else:
                     f = Rect(currPos[0], currPos[1], 410, 445 - lastEdgeTouch[1])     
 
-
+        if f != Rect(1000, 1000, 1, 1):
+            capRects.append((randomColourGenerator, f))
         pg.draw.rect(screen, randomColourGenerator(), f)
+
+
 '''
+Requirements: 
+1. 
+'''
+''''''
+def captures():
+    global hold, pointer
+    if len(trail_pnts) < 2:
+        return
+    
+
+    const = (0,0)
+    for i in range(0,len(trail_pnts)-2):
+        curr = trail_pnts[i]
+        nxt = trail_pnts[i+1]
+        if curr[0] == nxt[0]:
+            if const[0] == 0:
+                const = (curr[0],const[1])
+        if curr[1] == nxt[1]:
+            if const[1] == 0:
+                const = (const[0], curr[1])
+        if const[0] != 0 and const[1] != 0 and not inList(const, hold) :
+            hold.append(const)
+            const = (0,0)
+    
+    if inEdge():
+        if not inList(hold, shape_list):
+            shape_list.append(hold[pointer:len(hold)])
+            pointer = len(hold) - 1
+            
+def inList(test, lst):
+    try:
+        lst.index(test)
+        return True
+    except ValueError:
+        return False
+    
+
+
+def printShapes():
+    for shape in shape_list:
+        print(shape)
+
 
 #the following functions work. Do not change 
 def addTrail(p) -> None:
     # coords are stored in tuples (x, y)
     # ignores duplicate coords
-    if len(trailRects) <= 0 or not (trailRects[-1][0] == p.this.centerx and trailRects[-1][1] == p.this.centery):
-        trailRects.append((p.this.centerx, p.this.centery))
+    if len(trail_pnts) <= 0 or not (trail_pnts[-1][0] == p.this.centerx and trail_pnts[-1][1] == p.this.centery):
+        trail_pnts.append((p.this.centerx, p.this.centery))
 
 def drawScene():
     #placeholders, will be switched for updateable entities
@@ -148,9 +198,11 @@ def drawScene():
 
     pg.draw.rect(screen, PASTEL_CORAL, field.center)
     pg.draw.rect(screen, (255, 255, 255), field.edge, 10) 
-    for trail in trailRects:
+    for trail in trail_pnts:
         pg.draw.rect(screen,(255,255,255),(trail[0]-5,trail[1]-5,10,10))
 
+    for point in hold:
+        pg.draw.circle(screen, (0,0,255), point, 5)
     
     pg.draw.rect(screen, (255, 0, 0), player.this)
     pg.draw.rect(screen,(0,255,0),sparc.this)
@@ -189,13 +241,31 @@ def update(dx, dy) -> None:
         player.this.move_ip(-dx, -dy)
 
     #add a function to correct position. when touchEdge() check every possible edge case
-    #
+    touchEdge()
 
 
 #add new function touchEdge. If the player is touching the edge, return True.
 #used in update to snap player to edge
 
+def touchEdge():
+    if player.this.top < 40:
+        addTrail(player)
+        player.this.update(player.this.left,30, 10, 10)
 
+    
+    if player.this.bottom > 440:
+        addTrail(player)
+        player.this.update(player.this.left,440,10,10)
+
+    if player.this.left < 45:
+        addTrail(player)
+        player.this.update(35,player.this.top,10,10)
+        
+    
+    if player.this.right > 445:
+        addTrail(player)
+        player.this.update(445,player.this.top,10,10)
+        
 def updateEnemy():
 
     pos = sparc.this.topleft    #defining position as top left of sparc
@@ -231,6 +301,9 @@ def updateEnemy():
         dx = rand(0, 10)
         dy = rand(0, 10)
         qix.this.move_ip(qix.dir[0] * dx, qix.dir[1] * dy)
+    
+    if player.edge:
+        player.last_edge = whichEdge()
         
 def closeEnough(pos):
     return abs(pos[0] - qix.goal[0]) <= 9 or abs(pos[1] - qix.goal[1]) <= 9
@@ -260,7 +333,8 @@ pg.draw.rect(screen, PASTEL_CORAL, field.center)
 while True:
     
     addTrail(player)
-    #fillRect()
+    
+    fillRect()
 
     # Check for events
     for event in pg.event.get():
@@ -315,8 +389,9 @@ while True:
 
     updateEnemy()
     update(dx, dy)
+    captures()
     drawScene()
     pg.display.flip()      #ok so do you know what a flipbook is? Yeah, this "flips" to the next frame
-    print(inEdge())
+    print(hold)
     pg.time.Clock().tick(60)                     #waits long enough to have 60 fps
 
