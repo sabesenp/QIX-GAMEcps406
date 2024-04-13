@@ -25,9 +25,12 @@ GAME_FONT = pg.freetype.Font("PressStart2P.ttf", screen_size[0]//25)
 PASTEL_CORAL = (248, 132, 121)
 # list of player objects
 trailRects = []
+filledRects = []
 inEdgeLastFrame = False
+sparcDamageBuff = 0
+QIXDamageBuff = 0
 
-'''
+
 def whichEdge() -> str:
     if inEdge():
         if player.this.centerx <= 40:
@@ -128,8 +131,7 @@ def fillRect() -> None:
                     f = Rect(currPos[0], currPos[1], 410, 445 - lastEdgeTouch[1])     
 
 
-        pg.draw.rect(screen, randomColourGenerator(), f)
-'''
+        filledRects.append((f, randomColourGenerator()))
 
 #the following functions work. Do not change 
 def addTrail(p) -> None:
@@ -151,6 +153,9 @@ def drawScene():
     for trail in trailRects:
         pg.draw.rect(screen,(255,255,255),(trail[0]-5,trail[1]-5,10,10))
 
+    # draws filled rects
+    for rectTuple in filledRects:
+        pg.draw.rect(screen, rectTuple[1], rectTuple[0])
     
     pg.draw.rect(screen, (255, 0, 0), player.this)
     pg.draw.rect(screen,(0,255,0),sparc.this)
@@ -166,6 +171,7 @@ def inEdge() -> bool:
     
     if player.this.centerx <= 40 or player.this.centerx >= 450 or player.this.centery <= 35 or player.this.centery >= 445:
         return True
+    return False
 
 def pickOriginal(pos: tuple) -> tuple:
     new = field.junctions[rand(0, len(field.junctions) - 1)]
@@ -241,6 +247,37 @@ def randomColourGenerator() -> tuple:
     b = rand(0,255)
     return (r, g, b)
 
+def damageCheckSparc():
+    global sparcDamageBuff
+    if sparc.this.centerx - 5 <= player.this.centerx <= sparc.this.centerx + 5 \
+        and sparc.this.centery - 5 <= player.this.centery <= sparc.this.centery and inEdge():
+        if sparcDamageBuff == 0:
+            player.health = player.health - 20
+            print("player hit sparc")
+        elif sparcDamageBuff == 10:
+            sparcDamageBuff = 0
+
+        sparcDamageBuff += 1
+
+    else:
+        sparcDamageBuff = 0
+
+def damageCheckQIX():
+    global QIXDamageBuff
+    if qix.this.centerx - 5 <= player.this.centerx <= qix.this.centerx + 5 \
+        and qix.this.centery - 5 <= player.this.centery <= qix.this.centery and not inEdge():
+        if QIXDamageBuff == 0:
+            player.health = player.health - 20
+            print("player hit qix")
+        elif QIXDamageBuff == 10:
+            QIXDamageBuff = 0
+
+        QIXDamageBuff += 1
+
+    else:
+        QIXDamageBuff = 0
+        
+
 #some game states
 KEY_RIGHT = False
 KEY_LEFT = False
@@ -260,12 +297,13 @@ pg.draw.rect(screen, PASTEL_CORAL, field.center)
 while True:
     
     addTrail(player)
-    #fillRect()
+    fillRect()
+    damageCheckSparc()
 
     # Check for events
     for event in pg.event.get():
         # Check for the quit event
-        if event.type == QUIT:
+        if event.type == QUIT or player.health <= 0:
             # Quit the game
             pg.quit()
             exit()
@@ -317,6 +355,6 @@ while True:
     update(dx, dy)
     drawScene()
     pg.display.flip()      #ok so do you know what a flipbook is? Yeah, this "flips" to the next frame
-    print(inEdge())
+    # print(inEdge())
     pg.time.Clock().tick(60)                     #waits long enough to have 60 fps
 
